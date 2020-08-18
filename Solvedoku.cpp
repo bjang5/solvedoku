@@ -8,6 +8,8 @@ int sudoku[9][9];
 // represents each number's attributes
 struct number {	
 	int count = 0;
+
+	// true equates to filled position, false equates to empty position
 	bool row [9];
 	bool column [9];
 	bool box [9];
@@ -46,36 +48,29 @@ void printSudoku() {
 	}
 }
 
+void solver(int num) {
+	for (int b = 0; b < 9; b++) {
+		if (!list[num].box[b]) {
+			for (int r = b/3; r <= b/3+2; r++) {
+				for (int c = (b%3)*3; c <= (b%3)*3+2; c++) {
+					
+				}
+			}
+		}
+	}
+}
+
 int main() {
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
 			cin >> sudoku[i][j];
-			if (sudoku[i][j] == 1) {
-				list[1].count++;
-			}
-			else if (sudoku[i][j] == 2) {
-				list[2].count++;
-			}
-			else if (sudoku[i][j] == 3) {
-				list[3].count++;
-			}
-			else if (sudoku[i][j] == 4) {
-				list[4].count++;
-			}
-			else if (sudoku[i][j] == 5) {
-				list[5].count++;
-			}
-			else if (sudoku[i][j] == 6) {
-				list[6].count++;
-			}
-			else if (sudoku[i][j] == 7) {
-				list[7].count++;
-			}
-			else if (sudoku[i][j] == 8) {
-				list[8].count++;
-			}
-			else if (sudoku[i][j] == 9) {
-				list[9].count++;
+			if(sudoku[i][j] != 0){
+				list[sudoku[i][j]].count++;
+				list[sudoku[i][j]].row[i] = true;
+				list[sudoku[i][j]].column[j] = true;
+				if () {
+
+				}
 			}
 		}
 	}
