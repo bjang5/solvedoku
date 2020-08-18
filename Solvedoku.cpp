@@ -8,10 +8,23 @@ int sudoku[9][9];
 // represents each number's attributes
 struct number {	
 	int count = 0;
-	int row [9];
-	int column [9];
-	int box [9];
+	bool row [9];
+	bool column [9];
+	bool box [9];
 };
+
+// list every number, indexed from 1-9
+number list[10];
+
+
+bool checkComplete(){
+	for (int i = 1; i <= 9; i++){
+		if (list[i].count!=9){
+			return false;
+		}
+	}
+	return true;
+}
 
 void printSudoku() {
 	cout << endl;
@@ -34,8 +47,6 @@ void printSudoku() {
 }
 
 int main() {
-	number list[10];
-
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
 			cin >> sudoku[i][j];
