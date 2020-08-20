@@ -18,6 +18,14 @@ struct number {
 // list every number, indexed from 1-9
 number list[10];
 
+void printNum(int num) {
+	cout << "Count " << list[num].count << endl;
+	for (int i = 0; i < 9; i++) {
+		cout << "Row " << i+1 << ": " << list[num].row[i] << endl;
+		cout << "Column " << i+1 << ": " << list[num].row[i] << endl;
+		cout << "Box " << i+1 << ": " << list[num].row[i] << endl;
+	}
+}
 
 bool checkComplete(){
 	for (int i = 1; i <= 9; i++){
@@ -49,41 +57,57 @@ void printSudoku() {
 }
 
 // solves the sudoku puzzle by boxes
-void solver(int num) {
-	for (int b = 0; b < 9; b++) {
-		bool miniBox[3][3];
-		if (!list[num].box[b]) {
-			for (int r = (b/3)*3; r <= (b/3)*3+2; r++) {
-				for (int c = (b%3)*3; c <= (b%3)*3+2; c++) {
-					if(list[num].row[r]==true){
-						miniBox[r%3][c%3] = true; 
-					}
-					if(list[num].column[r]==true){
-						miniBox[r%3][c%3] = true; 
-					}
-				}
-			}
-			int counter = 0;
-			int rCoordinate = -1;
-			int cCoordinate = -1;
-			for(int i = 0; i < 3; i++){
-				for (int j = 0; j < 3; j++){
-					if (miniBox[i][j] == false){
-						counter++;
-						rCoordinate = i;
-						cCoordinate = j;
-					}
-				}
-			}
-			// insert value if only one possible spot
-			if (counter == 1){
-				sudoku[rCoordinate + (b/3)*3][cCoordinate + (b%3)*3] = num;
-				list[num].count++;
-				list[num].row[rCoordinate + (b/3)*3] = true;
-				list[num].column[cCoordinate + (b%3)*3] = true;
-				list[num].box[b] = true;
-			}	
+void solver(int num, int boxNum) {
+	/*cout << num << " " << boxNum << endl;*/
+	bool miniBox[3][3];
+	/*for (int whatevers = 0; whatevers < 3; whatevers++) {
+		for (int sindeXESareacrimeagainsthumanityandthebaneofmyexistence = 0; sindeXESareacrimeagainsthumanityandthebaneofmyexistence < 3; sindeXESareacrimeagainsthumanityandthebaneofmyexistence++) {
+			miniBox[whatevers][sindeXESareacrimeagainsthumanityandthebaneofmyexistence] = false;
 		}
+		cout << endl;
+	}*/
+	if (!list[num].box[boxNum]) {
+		for (int r = (boxNum/3)*3; r <= (boxNum/3)*3+2; r++) {
+			for (int c = (boxNum%3)*3; c <= (boxNum%3)*3+2; c++) {
+				if(list[num].row[r]==true){
+					miniBox[r%3][c%3] = true; 
+				}
+				if(list[num].column[c]==true){
+					miniBox[r%3][c%3] = true; 
+				}
+				if(sudoku[r][c]) {
+					miniBox[r%3][c%3] = true;
+				}
+				/*for (int whatever = 0; whatever < 3; whatever++) {
+					for (int indeXESareacrimeagainsthumanityandthebaneofmyexistence = 0; indeXESareacrimeagainsthumanityandthebaneofmyexistence < 3; indeXESareacrimeagainsthumanityandthebaneofmyexistence++) {
+						cout << miniBox[whatever][indeXESareacrimeagainsthumanityandthebaneofmyexistence];
+					}
+					cout << endl;
+				}
+				cout << endl;*/
+			}
+		}
+		int counter = 0;
+		int rCoordinate = -1;
+		int cCoordinate = -1;
+		for(int i = 0; i < 3; i++){
+			for (int j = 0; j < 3; j++){
+				if (miniBox[i][j] == false){
+					counter++;
+					rCoordinate = i;
+					cCoordinate = j;
+				}
+			}
+		}
+		/*cout << counter << endl;*/
+		// insert value if only one possible spot
+		if (counter == 1){
+			sudoku[rCoordinate + (boxNum/3)*3][cCoordinate + (boxNum%3)*3] = num;
+			list[num].count++;
+			list[num].row[rCoordinate + (boxNum/3)*3] = true;
+			list[num].column[cCoordinate + (boxNum%3)*3] = true;
+			list[num].box[boxNum] = true;
+		}	
 	}
 }
 
@@ -98,6 +122,22 @@ int main() {
 			}
 		}
 	}
+
+	/*for (int n = 1; n < 10; n++) {
+		printNum(n);
+	}*/
+
 	printSudoku();
+	for (int j = 0; j < 9; j++) {
+		solver(j+1,j);
+	}
+	cout << endl << endl << endl;
+	printSudoku();
+
 	return 0;
 }
+
+
+/*TEST
+5 3 4 6 7 8 9 1 2 6 7 2 1 9 5 0 4 8 0 9 8 3 4 0 5 6 7 8 5 9 7 6 1 4 2 3 0 2 6 8 0 3 7 9 1 7 1 3 9 2 4 8 5 0 9 6 1 5 3 7 2 8 4 2 8 0 4 1 9 6 3 5 3 4 5 2 0 6 1 7 0
+*/
