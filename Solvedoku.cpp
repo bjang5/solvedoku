@@ -3,7 +3,8 @@
 using namespace std;
 
 // stores the entirety of the puzzle
-int sudoku[9][9];	
+int sudoku[9][9];
+vector<int> backTrackArr;	
 
 // represents each number's attributes
 struct number {	
@@ -103,6 +104,39 @@ void solver(int num, int boxNum) {
 	}
 }
 
+void backTrack(){
+	// temporary Sudoku board 
+	int temp[9][9];
+	// temporary list of numbers
+	number tempList[10];
+
+
+	for (int i = 0; i < 9; i++){
+		for(int j = 0; j < 9; j++){
+			temp[i][j] = sudoku[i][j];
+		}
+	}
+
+
+
+
+	// returns if there are still missing values
+	for (int i = 0; i < 9; i++){
+		for(int j = 0; j < 9; j++){
+			if (temp[i][j]==0){
+				return;
+			}
+		}
+	}
+
+	for (int i = 0; i < 9; i++){
+		for(int j = 0; j < 9; j++){
+			sudoku[i][j] = temp[i][j];
+		}
+	}
+	return;
+}
+
 int main() {
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
@@ -135,13 +169,6 @@ int main() {
 		}
 	}
 
-	//check box number values
-	for(int i = 0; i < 9; i++){
-		for (int num = 1; num <=9; num++){
-			cout << "Number: " << num ; 
-			cout << " Box Number: " << i << " is " << list[num].box[i] << endl;
-		}
-	}
 
 	// before solve
 	printSudoku();
@@ -157,14 +184,6 @@ int main() {
 	cout << endl << endl << endl;
 	// after solve
 	printSudoku();
-
-	//check box number values
-	for(int i = 0; i < 9; i++){
-		for (int num = 1; num <=9; num++){
-			cout << "Number: " << num ; 
-			cout << " Box Number: " << i << " is " << list[num].box[i] << endl;
-		}
-	}
 
 	return 0;
 }
