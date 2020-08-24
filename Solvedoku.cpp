@@ -114,24 +114,32 @@ int main() {
 
 				if(i>=0&&i<=2&&j>=0&&j<=2){
 					list[sudoku[i][j]].box[0] = true;
-				} else if(i>2&&i<=5&&j>=0&&j<=2){
+				} else if(j>2&&j<=5&&i>=0&&i<=2){
 					list[sudoku[i][j]].box[1] = true;
-				} else if(i>5&&i<=8&&j>=0&&j<=2){
+				} else if(j>5&&j<=8&&i>=0&&i<=2){
 					list[sudoku[i][j]].box[2] = true;
-				}else if(i>=0&&i<=2&&j>2&&j<=5){
+				}else if(j>=0&&j<=2&&i>2&&i<=5){
 					list[sudoku[i][j]].box[3] = true;
-				}else if(i>2&&i<=5&&j>2&&j<=5){
+				}else if(j>2&&j<=5&&i>2&&i<=5){
 					list[sudoku[i][j]].box[4] = true;
-				}else if(i>5&&i<=8&&j>2&&j<=5){
+				}else if(j>5&&j<=8&&i>2&&i<=5){
 					list[sudoku[i][j]].box[5] = true;
-				}else if(i>=0&&i<=2&&j>5&&j<=8){
+				}else if(j>=0&&j<=2&&i>5&&i<=8){
 					list[sudoku[i][j]].box[6] = true;
-				}else if(i>2&&i<=5&&j>5&&j<=8){
+				}else if(j>2&&j<=5&&i>5&&i<=8){
 					list[sudoku[i][j]].box[7] = true;
-				}else if(i>5&&i<=8&&j>5&&j<=8){
+				}else if(j>5&&j<=8&&i>5&&i<=8){
 					list[sudoku[i][j]].box[8] = true;
 				}
 			}
+		}
+	}
+
+	//check box number values
+	for(int i = 0; i < 9; i++){
+		for (int num = 1; num <=9; num++){
+			cout << "Number: " << num ; 
+			cout << " Box Number: " << i << " is " << list[num].box[i] << endl;
 		}
 	}
 
@@ -150,6 +158,14 @@ int main() {
 	// after solve
 	printSudoku();
 
+	//check box number values
+	for(int i = 0; i < 9; i++){
+		for (int num = 1; num <=9; num++){
+			cout << "Number: " << num ; 
+			cout << " Box Number: " << i << " is " << list[num].box[i] << endl;
+		}
+	}
+
 	return 0;
 }
 
@@ -159,3 +175,4 @@ int main() {
 
 0 8 0 0 0 0 2 0 0 0 0 0 0 8 4 0 9 0 0 0 6 3 2 0 0 1 0 0 9 7 0 0 0 0 8 0 8 0 0 9 0 3 0 0 2 0 1 0 0 0 0 9 5 0 0 7 0 0 4 5 8 0 0 0 3 0 7 1 0 0 0 0 0 0 8 0 0 0 0 4 0
 */
+
