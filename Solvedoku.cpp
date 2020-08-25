@@ -1,35 +1,40 @@
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
-// stores the entirety of the puzzle
-int sudoku[9][9];
-vector<int> backTrackArr;	
+int repCounter = 0;
 
 // represents each number's attributes
 struct number {	
 	int count = 0;
 
 	// true equates to filled position, false equates to empty position
-	bool row [9] = {false, false,false,false,false,false,false,false,false};
-	bool column [9] = {false, false,false,false,false,false,false,false,false};
-	bool box [9] = {false, false,false,false,false,false,false,false,false};
+	bool row [9] = {false,false,false,false,false,false,false,false,false};
+	bool column [9] = {false,false,false,false,false,false,false,false,false};
+	bool box [9] = {false,false,false,false,false,false,false,false,false};
 };
 
-// list every number, indexed from 1-9
-number list[10];
+struct sudoku {
+	int matrix[9][9];
+	bool solved = false;
+	number list[10];
+};
+
+sudoku original;
+vector<sudoku> backTrackVers;	
 
 void printNum(int num) {
 	for (int i = 0; i < 9; i++) {
-		cout << "Row " << i+1 << ": " << list[num].row[i] << endl;
-		cout << "Column " << i+1 << ": " << list[num].row[i] << endl;
-		cout << "Box " << i+1 << ": " << list[num].row[i] << endl;
+		cout << "Row " << i+1 << ": " << original.list[num].row[i] << endl;
+		cout << "Column " << i+1 << ": " << original.list[num].row[i] << endl;
+		cout << "Box " << i+1 << ": " << original.list[num].row[i] << endl;
 	}
 }
 
 bool checkComplete(){
 	for (int i = 1; i <= 9; i++){
-		if (list[i].count!=9){
+		if (original.list[i].count!=9){
 			return false;
 		}
 	}
@@ -40,7 +45,7 @@ void printSudoku() {
 	cout << endl;
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
-			cout << sudoku[i][j] << " ";
+			cout << original.matrix[i][j] << " ";
 
 			// starts at 0, need to shift over by 1. 
 			// Add column symbol after every three numbers, %3 returns 0 when (j+1) is a multiple of 3
@@ -56,9 +61,10 @@ void printSudoku() {
 	}
 }
 
-// solves the sudoku puzzle by boxes
-void solver(int num, int boxNum) {
+// solves the original.matrix puzzle by boxes
+void initSolver(int num, int boxNum) {
 	/*cout << num << " " << boxNum << endl;*/
+
 	bool miniBox[3][3];
 	// initialization of miniBox
 	for (int boxIs = 0; boxIs < 3; boxIs++) {
@@ -67,14 +73,14 @@ void solver(int num, int boxNum) {
 		}
 	}
 
-	if (!(list[num].box[boxNum])) {
+	if (!(original.list[num].box[boxNum])) {
 		for (int r = (boxNum/3)*3; r <= (boxNum/3)*3+2; r++) {
 			for (int c = (boxNum%3)*3; c <= (boxNum%3)*3+2; c++) {
-				if(list[num].row[r]==true){
+				if(original.list[num].row[r]==true){
 					miniBox[r%3][c%3] = true;
-				} else if(list[num].column[c]==true){
+				} else if(original.list[num].column[c]==true){
 					miniBox[r%3][c%3] = true; 
-				} else if(sudoku[r][c]!=0) {
+				} else if(original.matrix[r][c]!=0) {
 					miniBox[r%3][c%3] = true;
 				}
 				
@@ -95,43 +101,47 @@ void solver(int num, int boxNum) {
 		}
 		// insert value if only one possible spot
 		if (counter == 1){
-			sudoku[rCoordinate + (boxNum/3)*3][cCoordinate + (boxNum%3)*3] = num;
-			list[num].count++;
-			list[num].row[rCoordinate + (boxNum/3)*3] = true;
-			list[num].column[cCoordinate + (boxNum%3)*3] = true;
-			list[num].box[boxNum] = true;
+			original.matrix[rCoordinate + (boxNum/3)*3][cCoordinate + (boxNum%3)*3] = num;
+			original.list[num].count++;
+			original.list[num].row[rCoordinate + (boxNum/3)*3] = true;
+			original.list[num].column[cCoordinate + (boxNum%3)*3] = true;
+			original.list[num].box[boxNum] = true;
+			repCounter = 0;
+		}
+		else {
+			repCounter++;
 		}	
 	}
 }
 
 void backTrack(){
-	// temporary Sudoku board 
+	// temporary original.matrix board 
 	int temp[9][9];
 	// temporary list of numbers
-	number tempList[10];
+	number templist[10];
 
+	int i, j;
 
-	for (int i = 0; i < 9; i++){
-		for(int j = 0; j < 9; j++){
-			temp[i][j] = sudoku[i][j];
+	for (i = 0; i < 9; i++){
+		for(j = 0; j < 9; j++){
+			temp[i][j] = original.matrix[i][j];
 		}
 	}
 
 
 
-
 	// returns if there are still missing values
-	for (int i = 0; i < 9; i++){
-		for(int j = 0; j < 9; j++){
+	for (i = 0; i < 9; i++){
+		for(j = 0; j < 9; j++){
 			if (temp[i][j]==0){
 				return;
 			}
 		}
 	}
 
-	for (int i = 0; i < 9; i++){
-		for(int j = 0; j < 9; j++){
-			sudoku[i][j] = temp[i][j];
+	for (i = 0; i < 9; i++){
+		for(j = 0; j < 9; j++){
+			original.matrix[i][j] = temp[i][j];
 		}
 	}
 	return;
@@ -140,30 +150,30 @@ void backTrack(){
 int main() {
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
-			cin >> sudoku[i][j];
-			if(sudoku[i][j] != 0){
-				list[sudoku[i][j]].count++;
-				list[sudoku[i][j]].row[i] = true;
-				list[sudoku[i][j]].column[j] = true;
+			cin >> original.matrix[i][j];
+			if(original.matrix[i][j] != 0){
+				original.list[original.matrix[i][j]].count++;
+				original.list[original.matrix[i][j]].row[i] = true;
+				original.list[original.matrix[i][j]].column[j] = true;
 
 				if(i>=0&&i<=2&&j>=0&&j<=2){
-					list[sudoku[i][j]].box[0] = true;
+					original.list[original.matrix[i][j]].box[0] = true;
 				} else if(j>2&&j<=5&&i>=0&&i<=2){
-					list[sudoku[i][j]].box[1] = true;
+					original.list[original.matrix[i][j]].box[1] = true;
 				} else if(j>5&&j<=8&&i>=0&&i<=2){
-					list[sudoku[i][j]].box[2] = true;
+					original.list[original.matrix[i][j]].box[2] = true;
 				}else if(j>=0&&j<=2&&i>2&&i<=5){
-					list[sudoku[i][j]].box[3] = true;
+					original.list[original.matrix[i][j]].box[3] = true;
 				}else if(j>2&&j<=5&&i>2&&i<=5){
-					list[sudoku[i][j]].box[4] = true;
+					original.list[original.matrix[i][j]].box[4] = true;
 				}else if(j>5&&j<=8&&i>2&&i<=5){
-					list[sudoku[i][j]].box[5] = true;
+					original.list[original.matrix[i][j]].box[5] = true;
 				}else if(j>=0&&j<=2&&i>5&&i<=8){
-					list[sudoku[i][j]].box[6] = true;
+					original.list[original.matrix[i][j]].box[6] = true;
 				}else if(j>2&&j<=5&&i>5&&i<=8){
-					list[sudoku[i][j]].box[7] = true;
+					original.list[original.matrix[i][j]].box[7] = true;
 				}else if(j>5&&j<=8&&i>5&&i<=8){
-					list[sudoku[i][j]].box[8] = true;
+					original.list[original.matrix[i][j]].box[8] = true;
 				}
 			}
 		}
@@ -173,13 +183,16 @@ int main() {
 	// before solve
 	printSudoku();
 	
-	for (int i = 0; i < 1000; i++){
+	while (repCounter < 10){
+		cout << repCounter << endl;
 		for (int num = 1; num <= 9; num++) {
-				for (int box = 0; box < 9; box++) {
-					solver(num,box);
+			for (int box = 0; box < 9; box++) {
+				initSolver(num,box);
 			}
 		}
 	}
+
+
 
 	cout << endl << endl << endl;
 	// after solve
@@ -194,4 +207,3 @@ int main() {
 
 0 8 0 0 0 0 2 0 0 0 0 0 0 8 4 0 9 0 0 0 6 3 2 0 0 1 0 0 9 7 0 0 0 0 8 0 8 0 0 9 0 3 0 0 2 0 1 0 0 0 0 9 5 0 0 7 0 0 4 5 8 0 0 0 3 0 7 1 0 0 0 0 0 0 8 0 0 0 0 4 0
 */
-
