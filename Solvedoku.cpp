@@ -62,7 +62,7 @@ void printSudoku() {
 }
 
 // solves the original.matrix puzzle by boxes
-void initSolver(int num, int boxNum) {
+bool initSolver(int num, int boxNum) {
 	/*cout << num << " " << boxNum << endl;*/
 
 	bool miniBox[3][3];
@@ -106,15 +106,13 @@ void initSolver(int num, int boxNum) {
 			original.list[num].row[rCoordinate + (boxNum/3)*3] = true;
 			original.list[num].column[cCoordinate + (boxNum%3)*3] = true;
 			original.list[num].box[boxNum] = true;
-			repCounter = 0;
+			return true;
 		}
-		else {
-			repCounter++;
-		}	
+		return false;
 	}
 }
 
-void backTrack(){
+/*void backTrack(){
 	// temporary original.matrix board 
 	int temp[9][9];
 	// temporary list of numbers
@@ -145,7 +143,7 @@ void backTrack(){
 		}
 	}
 	return;
-}
+}*/
 
 int main() {
 	for (int i = 0; i < 9; i++) {
@@ -184,10 +182,12 @@ int main() {
 	printSudoku();
 	
 	while (repCounter < 10){
-		cout << repCounter << endl;
-		for (int num = 1; num <= 9; num++) {
+		for (int num = 1; num <= 9 && repCounter < 10; num++) {
+			repCounter++;
 			for (int box = 0; box < 9; box++) {
-				initSolver(num,box);
+				if (initSolver(num,box)) {
+					repCounter = 0;
+				}
 			}
 		}
 	}
