@@ -110,6 +110,7 @@ bool initSolver(int num, int boxNum) {
 		}
 		return false;
 	}
+	return false;
 }
 
 /*void backTrack(){
