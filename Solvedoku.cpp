@@ -23,6 +23,7 @@ struct sudoku {
 
 sudoku sudokuVect[1000];	
 
+
 void printNum(int num) {
 	for (int i = 0; i < 9; i++) {
 		cout << "Row " << i+1 << ": " << sudokuVect[0].list[num].row[i] << endl;
@@ -31,9 +32,9 @@ void printNum(int num) {
 	}
 }
 
-bool checkComplete(sudoku puzzle){
+bool checkComplete(){
 	for (int i = 1; i <= 9; i++){
-		if (puzzle.list[i].count!=9){
+		if (sudokuVect[btIter].list[i].count!=9){
 			return false;
 		}
 	}
@@ -44,7 +45,7 @@ void printSudoku() {
 	cout << endl;
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
-			cout << sudokuVect[0].matrix[i][j] << " ";
+			cout << sudokuVect[btIter].matrix[i][j] << " ";
 
 			// starts at 0, need to shift over by 1. 
 			// Add column symbol after every three numbers, %3 returns 0 when (j+1) is a multiple of 3
@@ -60,10 +61,9 @@ void printSudoku() {
 	}
 }
 
-// solves the sudokuVect[0].matrix puzzle by boxes
+// solves the puzzle by boxes, num is current number to be solved for, guess = true if number is being guessed, false if only spot available
+// returns true if value is inserted, INCLUDING guesses
 bool initSolver(int num, int boxNum, bool guess) {
-	/*cout << num << " " << boxNum << endl;*/
-
 	bool miniBox[3][3];
 	// initialization of miniBox
 	for (int boxIs = 0; boxIs < 3; boxIs++) {
@@ -122,6 +122,7 @@ bool initSolver(int num, int boxNum, bool guess) {
 
 void backTrack(int gNum, int gBoxNum){
 	btIter++;
+	// copies content from previous sudoku into new sudoku
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
 			sudokuVect[btIter].matrix[i][j] = sudokuVect[btIter-1].matrix[i][j];
@@ -153,7 +154,7 @@ void backTrack(int gNum, int gBoxNum){
 			}
 		}
 	}
-	if (checkComplete(sudokuVect[btIter])) {
+	if (checkComplete()) {
 		cout << "Yay!" << endl;
 	}
 	else {
@@ -163,6 +164,15 @@ void backTrack(int gNum, int gBoxNum){
 }
 
 int main() {
+	// initializes sudokuVect
+	for(sudoku s : sudokuVect){
+		for(int k = 0; k < 9; k++){
+			for(int l = 0; l < 9; l++){
+				s.matrix[k][l] = 0;
+			}
+		}
+	}
+
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
 			cin >> sudokuVect[0].matrix[i][j];
@@ -208,7 +218,7 @@ int main() {
 		}
 	}
 
-	if (!checkComplete(sudokuVect[0])) {
+	if (!checkComplete()) {
 		backTrack(1,0);
 	}
 
@@ -226,4 +236,6 @@ int main() {
 0 8 0 0 0 0 2 0 0 0 0 0 0 8 4 0 9 0 0 0 6 3 2 0 0 1 0 0 9 7 0 0 0 0 8 0 8 0 0 9 0 3 0 0 2 0 1 0 0 0 0 9 5 0 0 7 0 0 4 5 8 0 0 0 3 0 7 1 0 0 0 0 0 0 8 0 0 0 0 4 0
 
 9 2 0 8 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 2 6 5 0 0 0 5 0 8 4 0 2 0 0 0 0 4 0 0 0 0 6 8 0 0 9 0 0 3 8 2 0 4 0 3 4 0 0 0 0 0 2 0 8 0 0 2 3 0 7 9 0 0 0 0 0 0 5 0 8 
+
+9 0 1 2 0 0 0 0 6 0 6 0 0 8 0 0 0 4 0 0 0 0 0 4 0 0 3 7 0 0 0 0 1 0 0 5 0 0 5 0 4 0 6 0 0 3 0 0 5 0 0 0 0 8 2 0 0 4 0 0 0 0 0 6 0 0 0 5 0 0 9 0 4 0 0 0 0 7 8 0 1
 */
