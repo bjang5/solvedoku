@@ -4,6 +4,7 @@
 using namespace std;
 
 int repCounter = 0;
+int btIter = 0;
 
 // represents each number's attributes
 struct number {	
@@ -17,24 +18,22 @@ struct number {
 
 struct sudoku {
 	int matrix[9][9];
-	bool solved = false;
 	number list[10];
 };
 
-sudoku original;
-vector<sudoku> backTrackVers;	
+sudoku sudokuVect[1000];	
 
 void printNum(int num) {
 	for (int i = 0; i < 9; i++) {
-		cout << "Row " << i+1 << ": " << original.list[num].row[i] << endl;
-		cout << "Column " << i+1 << ": " << original.list[num].row[i] << endl;
-		cout << "Box " << i+1 << ": " << original.list[num].row[i] << endl;
+		cout << "Row " << i+1 << ": " << sudokuVect[0].list[num].row[i] << endl;
+		cout << "Column " << i+1 << ": " << sudokuVect[0].list[num].row[i] << endl;
+		cout << "Box " << i+1 << ": " << sudokuVect[0].list[num].row[i] << endl;
 	}
 }
 
-bool checkComplete(){
+bool checkComplete(sudoku puzzle){
 	for (int i = 1; i <= 9; i++){
-		if (original.list[i].count!=9){
+		if (puzzle.list[i].count!=9){
 			return false;
 		}
 	}
@@ -45,7 +44,7 @@ void printSudoku() {
 	cout << endl;
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
-			cout << original.matrix[i][j] << " ";
+			cout << sudokuVect[0].matrix[i][j] << " ";
 
 			// starts at 0, need to shift over by 1. 
 			// Add column symbol after every three numbers, %3 returns 0 when (j+1) is a multiple of 3
@@ -61,8 +60,8 @@ void printSudoku() {
 	}
 }
 
-// solves the original.matrix puzzle by boxes
-bool initSolver(int num, int boxNum) {
+// solves the sudokuVect[0].matrix puzzle by boxes
+bool initSolver(int num, int boxNum, bool guess) {
 	/*cout << num << " " << boxNum << endl;*/
 
 	bool miniBox[3][3];
@@ -73,14 +72,14 @@ bool initSolver(int num, int boxNum) {
 		}
 	}
 
-	if (!(original.list[num].box[boxNum])) {
+	if (!(sudokuVect[btIter].list[num].box[boxNum])) {
 		for (int r = (boxNum/3)*3; r <= (boxNum/3)*3+2; r++) {
 			for (int c = (boxNum%3)*3; c <= (boxNum%3)*3+2; c++) {
-				if(original.list[num].row[r]==true){
+				if(sudokuVect[btIter].list[num].row[r]==true){
 					miniBox[r%3][c%3] = true;
-				} else if(original.list[num].column[c]==true){
+				} else if(sudokuVect[btIter].list[num].column[c]==true){
 					miniBox[r%3][c%3] = true; 
-				} else if(original.matrix[r][c]!=0) {
+				} else if(sudokuVect[btIter].matrix[r][c]!=0) {
 					miniBox[r%3][c%3] = true;
 				}
 				
@@ -96,16 +95,24 @@ bool initSolver(int num, int boxNum) {
 					counter++;
 					rCoordinate = i;
 					cCoordinate = j;
+					if (guess) {
+						sudokuVect[btIter].matrix[rCoordinate + (boxNum/3)*3][cCoordinate + (boxNum%3)*3] = num;
+						sudokuVect[btIter].list[num].count++;
+						sudokuVect[btIter].list[num].row[rCoordinate + (boxNum/3)*3] = true;
+						sudokuVect[btIter].list[num].column[cCoordinate + (boxNum%3)*3] = true;
+						sudokuVect[btIter].list[num].box[boxNum] = true;
+						return true;
+					}
 				}
 			}
 		}
 		// insert value if only one possible spot
 		if (counter == 1){
-			original.matrix[rCoordinate + (boxNum/3)*3][cCoordinate + (boxNum%3)*3] = num;
-			original.list[num].count++;
-			original.list[num].row[rCoordinate + (boxNum/3)*3] = true;
-			original.list[num].column[cCoordinate + (boxNum%3)*3] = true;
-			original.list[num].box[boxNum] = true;
+			sudokuVect[btIter].matrix[rCoordinate + (boxNum/3)*3][cCoordinate + (boxNum%3)*3] = num;
+			sudokuVect[btIter].list[num].count++;
+			sudokuVect[btIter].list[num].row[rCoordinate + (boxNum/3)*3] = true;
+			sudokuVect[btIter].list[num].column[cCoordinate + (boxNum%3)*3] = true;
+			sudokuVect[btIter].list[num].box[boxNum] = true;
 			return true;
 		}
 		return false;
@@ -113,71 +120,79 @@ bool initSolver(int num, int boxNum) {
 	return false;
 }
 
-/*void backTrack(){
-	// temporary original.matrix board 
-	int temp[9][9];
-	// temporary list of numbers
-	number templist[10];
-
-	int i, j;
-
-	for (i = 0; i < 9; i++){
-		for(j = 0; j < 9; j++){
-			temp[i][j] = original.matrix[i][j];
-		}
-	}
-
-
-
-	// returns if there are still missing values
-	for (i = 0; i < 9; i++){
-		for(j = 0; j < 9; j++){
-			if (temp[i][j]==0){
-				return;
-			}
-		}
-	}
-
-	for (i = 0; i < 9; i++){
-		for(j = 0; j < 9; j++){
-			original.matrix[i][j] = temp[i][j];
-		}
-	}
-	return;
-}*/
-
-int main() {
+void backTrack(int gNum, int gBoxNum){
+	btIter++;
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
-			cin >> original.matrix[i][j];
-			if(original.matrix[i][j] != 0){
-				original.list[original.matrix[i][j]].count++;
-				original.list[original.matrix[i][j]].row[i] = true;
-				original.list[original.matrix[i][j]].column[j] = true;
+			sudokuVect[btIter].matrix[i][j] = sudokuVect[btIter-1].matrix[i][j];
+		}
+	}
+	for (int k = 1; k < 10; k++) {
+		sudokuVect[btIter].list[k].count = sudokuVect[btIter-1].list[k].count;
+		for (int l = 0; l < 9; l++) {
+			sudokuVect[btIter].list[k].row[l] = sudokuVect[btIter-1].list[k].row[l];
+			sudokuVect[btIter].list[k].column[l] = sudokuVect[btIter-1].list[k].column[l];
+			sudokuVect[btIter].list[k].box[l] = sudokuVect[btIter-1].list[k].box[l];
+		}
+	}
 
-				if(i>=0&&i<=2&&j>=0&&j<=2){
-					original.list[original.matrix[i][j]].box[0] = true;
-				} else if(j>2&&j<=5&&i>=0&&i<=2){
-					original.list[original.matrix[i][j]].box[1] = true;
-				} else if(j>5&&j<=8&&i>=0&&i<=2){
-					original.list[original.matrix[i][j]].box[2] = true;
-				}else if(j>=0&&j<=2&&i>2&&i<=5){
-					original.list[original.matrix[i][j]].box[3] = true;
-				}else if(j>2&&j<=5&&i>2&&i<=5){
-					original.list[original.matrix[i][j]].box[4] = true;
-				}else if(j>5&&j<=8&&i>2&&i<=5){
-					original.list[original.matrix[i][j]].box[5] = true;
-				}else if(j>=0&&j<=2&&i>5&&i<=8){
-					original.list[original.matrix[i][j]].box[6] = true;
-				}else if(j>2&&j<=5&&i>5&&i<=8){
-					original.list[original.matrix[i][j]].box[7] = true;
-				}else if(j>5&&j<=8&&i>5&&i<=8){
-					original.list[original.matrix[i][j]].box[8] = true;
+	while (!initSolver(gNum, gBoxNum, true)) {
+		gNum++;
+		if (gNum == 10) {
+			gBoxNum++;
+			gNum = 1;
+		}
+	}
+	while (repCounter < 10){
+		for (int num = 1; num <= 9 && repCounter < 10; num++) {
+			repCounter++;
+			for (int box = 0; box < 9; box++) {
+				if (initSolver(num, box, false)) {
+					repCounter = 0;
 				}
 			}
 		}
 	}
+	if (checkComplete(sudokuVect[btIter])) {
+		cout << "Yay!" << endl;
+	}
+	else {
+		backTrack(gNum, gBoxNum);
+	}
+	return;
+}
 
+int main() {
+	for (int i = 0; i < 9; i++) {
+		for (int j = 0; j < 9; j++) {
+			cin >> sudokuVect[0].matrix[i][j];
+			if(sudokuVect[0].matrix[i][j] != 0){
+				sudokuVect[0].list[sudokuVect[0].matrix[i][j]].count++;
+				sudokuVect[0].list[sudokuVect[0].matrix[i][j]].row[i] = true;
+				sudokuVect[0].list[sudokuVect[0].matrix[i][j]].column[j] = true;
+
+				if(i>=0&&i<=2&&j>=0&&j<=2){
+					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[0] = true;
+				} else if(j>2&&j<=5&&i>=0&&i<=2){
+					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[1] = true;
+				} else if(j>5&&j<=8&&i>=0&&i<=2){
+					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[2] = true;
+				}else if(j>=0&&j<=2&&i>2&&i<=5){
+					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[3] = true;
+				}else if(j>2&&j<=5&&i>2&&i<=5){
+					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[4] = true;
+				}else if(j>5&&j<=8&&i>2&&i<=5){
+					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[5] = true;
+				}else if(j>=0&&j<=2&&i>5&&i<=8){
+					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[6] = true;
+				}else if(j>2&&j<=5&&i>5&&i<=8){
+					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[7] = true;
+				}else if(j>5&&j<=8&&i>5&&i<=8){
+					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[8] = true;
+				}
+			}
+		}
+	}
 
 	// before solve
 	printSudoku();
@@ -186,14 +201,16 @@ int main() {
 		for (int num = 1; num <= 9 && repCounter < 10; num++) {
 			repCounter++;
 			for (int box = 0; box < 9; box++) {
-				if (initSolver(num,box)) {
+				if (initSolver(num, box, false)) {
 					repCounter = 0;
 				}
 			}
 		}
 	}
 
-
+	if (!checkComplete(sudokuVect[0])) {
+		backTrack(1,0);
+	}
 
 	cout << endl << endl << endl;
 	// after solve
