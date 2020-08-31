@@ -3,49 +3,31 @@
 
 using namespace std;
 
-int repCounter = 0;
-int btIter = 0;
-
-// represents each number's attributes
-struct number {	
-	int count = 0;
-
-	// true equates to filled position, false equates to empty position
-	bool row [9] = {false,false,false,false,false,false,false,false,false};
-	bool column [9] = {false,false,false,false,false,false,false,false,false};
-	bool box [9] = {false,false,false,false,false,false,false,false,false};
-};
-
 struct sudoku {
 	int matrix[9][9];
-	number list[10];
+	bool solved = false;
 };
 
-sudoku sudokuVect[1000];	
+sudoku original;
 
 
-void printNum(int num) {
-	for (int i = 0; i < 9; i++) {
-		cout << "Row " << i+1 << ": " << sudokuVect[0].list[num].row[i] << endl;
-		cout << "Column " << i+1 << ": " << sudokuVect[0].list[num].row[i] << endl;
-		cout << "Box " << i+1 << ": " << sudokuVect[0].list[num].row[i] << endl;
-	}
-}
-
+// returns false if incomplete
 bool checkComplete(){
-	for (int i = 1; i <= 9; i++){
-		if (sudokuVect[btIter].list[i].count!=9){
-			return false;
+	for (int i = 0; i < 9; i++){
+		for (int j = 0; j < 9; j++){
+			if (original.matrix[i][j]==0)
+				return false;
 		}
 	}
 	return true;
 }
 
+// prints the sudoku puzzle
 void printSudoku() {
 	cout << endl;
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
-			cout << sudokuVect[btIter].matrix[i][j] << " ";
+			cout << original.matrix[i][j] << " ";
 
 			// starts at 0, need to shift over by 1. 
 			// Add column symbol after every three numbers, %3 returns 0 when (j+1) is a multiple of 3
@@ -61,168 +43,109 @@ void printSudoku() {
 	}
 }
 
-// solves the puzzle by boxes, num is current number to be solved for, guess = true if number is being guessed, false if only spot available
-// returns true if value is inserted, INCLUDING guesses
-bool initSolver(int num, int boxNum, bool guess) {
-	bool miniBox[3][3];
-	// initialization of miniBox
-	for (int boxIs = 0; boxIs < 3; boxIs++) {
-		for (int sboxJ = 0; sboxJ < 3; sboxJ++) {
-			miniBox[boxIs][sboxJ] = false;
-		}
+
+// gives the box # (0-9) for row i, column j
+int giveBox(int i, int j ){
+	if(i>=0&&i<=2&&j>=0&&j<=2){
+					return 0;
+				} else if(j>2&&j<=5&&i>=0&&i<=2){
+					return 1;
+				} else if(j>5&&j<=8&&i>=0&&i<=2){
+					return 2;
+				}else if(j>=0&&j<=2&&i>2&&i<=5){
+					return 3;
+				}else if(j>2&&j<=5&&i>2&&i<=5){
+					return 4;
+				}else if(j>5&&j<=8&&i>2&&i<=5){
+					return 5;
+				}else if(j>=0&&j<=2&&i>5&&i<=8){
+					return 6;
+				}else if(j>2&&j<=5&&i>5&&i<=8){
+					return 7;
+				}else {
+					return 8;
+				}
+}
+
+// returns true if we can put into original[i][j] without breaking sudoku rules
+bool validInput(int num, int i, int j){
+	// box coordinates of row i, column j
+	int boxNum = giveBox(i, j);
+
+	for (int k = 0; k < 9; k++){
+		if(original.matrix[i][k] == num)
+			return false;
 	}
 
-	if (!(sudokuVect[btIter].list[num].box[boxNum])) {
-		for (int r = (boxNum/3)*3; r <= (boxNum/3)*3+2; r++) {
-			for (int c = (boxNum%3)*3; c <= (boxNum%3)*3+2; c++) {
-				if(sudokuVect[btIter].list[num].row[r]==true){
-					miniBox[r%3][c%3] = true;
-				} else if(sudokuVect[btIter].list[num].column[c]==true){
-					miniBox[r%3][c%3] = true; 
-				} else if(sudokuVect[btIter].matrix[r][c]!=0) {
-					miniBox[r%3][c%3] = true;
-				}
-				
-			}
+	for (int k = 0; k < 9; k++){
+		if(original.matrix[k][j] == num)
+			return false;
+	}
+
+	for(int boxRow = (boxNum/3)*3; boxRow <= (boxNum/3)*3+2; boxRow++){
+		for (int boxCol = (boxNum%3)*3; boxCol <= (boxNum%3)*3+2; boxCol++){
+			if(original.matrix[boxRow][boxCol] == num)
+				return false;
 		}
+	}
+	return true;
+}
+
+
+// finds the next empty spot in sudoku, returns false when no more empty spots
+// uses &row and &col to alter the values inputted into the function
+bool findEmpty(int &row, int &col){
+	for (row = 0; row < 9; row++)
+        for (col = 0; col < 9; col++)
+            if (original.matrix[row][col] == 0)
+                return true;
+    return false;
+}
+
+
+// uses recursion to try different values, stops when no more empty spots
+bool backTrack(){
+	int row, col;
+	// stops backTrack() once sudoku puzzle is completed
+	if(findEmpty(row, col) == false){
+		return true;
+	} else {
+		// attempts to try numbers 1-9
+		for(int num = 1; num <= 9; num++){
+			// inserts num into sudoku if within rules
+			if(validInput(num, row, col)){
+				original.matrix[row][col] = num;
 		
-		int counter = 0;
-		int rCoordinate = -1;
-		int cCoordinate = -1;
-		for(int i = 0; i < 3; i++){
-			for (int j = 0; j < 3; j++){
-				if (miniBox[i][j] == false){
-					counter++;
-					rCoordinate = i;
-					cCoordinate = j;
-					if (guess) {
-						sudokuVect[btIter].matrix[rCoordinate + (boxNum/3)*3][cCoordinate + (boxNum%3)*3] = num;
-						sudokuVect[btIter].list[num].count++;
-						sudokuVect[btIter].list[num].row[rCoordinate + (boxNum/3)*3] = true;
-						sudokuVect[btIter].list[num].column[cCoordinate + (boxNum%3)*3] = true;
-						sudokuVect[btIter].list[num].box[boxNum] = true;
-						return true;
-					}
+				// recursively calls itself, ends when sudoku is complete
+				if(backTrack()){
+					return true;
 				}
-			}
+
+				// if backTrack is invalid, replaces the tried number with 0 and tries the next num
+				original.matrix[row][col] = 0;
+			}				
 		}
-		// insert value if only one possible spot
-		if (counter == 1){
-			sudokuVect[btIter].matrix[rCoordinate + (boxNum/3)*3][cCoordinate + (boxNum%3)*3] = num;
-			sudokuVect[btIter].list[num].count++;
-			sudokuVect[btIter].list[num].row[rCoordinate + (boxNum/3)*3] = true;
-			sudokuVect[btIter].list[num].column[cCoordinate + (boxNum%3)*3] = true;
-			sudokuVect[btIter].list[num].box[boxNum] = true;
-			return true;
-		}
-		return false;
+			
 	}
 	return false;
 }
 
-void backTrack(int gNum, int gBoxNum){
-	btIter++;
-	// copies content from previous sudoku into new sudoku
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
-			sudokuVect[btIter].matrix[i][j] = sudokuVect[btIter-1].matrix[i][j];
-		}
-	}
-	for (int k = 1; k < 10; k++) {
-		sudokuVect[btIter].list[k].count = sudokuVect[btIter-1].list[k].count;
-		for (int l = 0; l < 9; l++) {
-			sudokuVect[btIter].list[k].row[l] = sudokuVect[btIter-1].list[k].row[l];
-			sudokuVect[btIter].list[k].column[l] = sudokuVect[btIter-1].list[k].column[l];
-			sudokuVect[btIter].list[k].box[l] = sudokuVect[btIter-1].list[k].box[l];
-		}
-	}
-
-	while (!initSolver(gNum, gBoxNum, true)) {
-		gNum++;
-		if (gNum == 10) {
-			gBoxNum++;
-			gNum = 1;
-		}
-	}
-	while (repCounter < 10){
-		for (int num = 1; num <= 9 && repCounter < 10; num++) {
-			repCounter++;
-			for (int box = 0; box < 9; box++) {
-				if (initSolver(num, box, false)) {
-					repCounter = 0;
-				}
-			}
-		}
-	}
-	if (checkComplete()) {
-		cout << "Yay!" << endl;
-	}
-	else {
-		backTrack(gNum, gBoxNum);
-	}
-	return;
-}
-
 int main() {
-	// initializes sudokuVect
-	for(sudoku s : sudokuVect){
-		for(int k = 0; k < 9; k++){
-			for(int l = 0; l < 9; l++){
-				s.matrix[k][l] = 0;
-			}
-		}
-	}
-
 	for (int i = 0; i < 9; i++) {
 		for (int j = 0; j < 9; j++) {
-			cin >> sudokuVect[0].matrix[i][j];
-			if(sudokuVect[0].matrix[i][j] != 0){
-				sudokuVect[0].list[sudokuVect[0].matrix[i][j]].count++;
-				sudokuVect[0].list[sudokuVect[0].matrix[i][j]].row[i] = true;
-				sudokuVect[0].list[sudokuVect[0].matrix[i][j]].column[j] = true;
-
-				if(i>=0&&i<=2&&j>=0&&j<=2){
-					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[0] = true;
-				} else if(j>2&&j<=5&&i>=0&&i<=2){
-					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[1] = true;
-				} else if(j>5&&j<=8&&i>=0&&i<=2){
-					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[2] = true;
-				}else if(j>=0&&j<=2&&i>2&&i<=5){
-					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[3] = true;
-				}else if(j>2&&j<=5&&i>2&&i<=5){
-					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[4] = true;
-				}else if(j>5&&j<=8&&i>2&&i<=5){
-					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[5] = true;
-				}else if(j>=0&&j<=2&&i>5&&i<=8){
-					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[6] = true;
-				}else if(j>2&&j<=5&&i>5&&i<=8){
-					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[7] = true;
-				}else if(j>5&&j<=8&&i>5&&i<=8){
-					sudokuVect[0].list[sudokuVect[0].matrix[i][j]].box[8] = true;
-				}
-			}
+			cin >> original.matrix[i][j];
 		}
 	}
+
 
 	// before solve
 	printSudoku();
-	
-	while (repCounter < 10){
-		for (int num = 1; num <= 9 && repCounter < 10; num++) {
-			repCounter++;
-			for (int box = 0; box < 9; box++) {
-				if (initSolver(num, box, false)) {
-					repCounter = 0;
-				}
-			}
-		}
-	}
 
-	if (!checkComplete()) {
-		backTrack(1,0);
-	}
+	// solving algorithm
+	backTrack();
 
 	cout << endl << endl << endl;
+
 	// after solve
 	printSudoku();
 
